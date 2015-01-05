@@ -1,0 +1,76 @@
+#!/bin/bash
+
+is_param=$1
+
+if [ "$is_param" = 'help' ]; then
+  echo ""
+  echo "[PRE-REQUISITES]"
+  echo ""
+  echo "You must code your data structures and initial data scripts in the SQL file with filename leading by 0 (zero)"
+  echo "  eg: 000-data-structure.sql"
+  echo ""
+  echo "The folder that contains your script must have a file named db.conf that contains config as below:"
+  echo "  db_host = your_database_hostname"
+  echo "  db_port = your_database_port"
+  echo "  db_user = your_username"
+  echo "  db_pass = your_password"
+  echo "  db_name = your_database_name"
+  echo ""
+  echo "You must code the Stored Routines inside the SUB-FOLDER named 'routines' (without any quotes)"
+  echo "The routines script must save in the SQL file prefixed with filename leading by 0 (zero)"
+  echo "  eg: 001-my_stored-proc.sql"
+  echo ""
+  echo "This folder naming convention was ALREADY setup for the workspace extracted from Mokapedia's git_project_template.tar.gz"
+  echo "Download here : http://src.mokapedia.net/git_project_template.tar.gz"
+  echo ""
+  echo "[USAGE EXAMPLES]"
+  echo ""
+  echo "cd /path/to/your/queries/folder"
+  echo "execute model                            # this will be drop/re-create your database and refill the schema + routines"
+  echo "execute code                             # this will be re-create ONLY the files under the 'routines' folder"
+  echo "execute \"SELECT * FROM some_tables\"      # this will be execute the specified queris and output the result to screen"
+  echo "execute help                             # display this inline help"
+  echo ""
+  exit 0
+fi
+
+
+config_file="$(pwd)/db.conf"
+
+if [ -f $config_file ]; then
+  ed -s $config_file <<< w
+  shopt -s extglob
+  while IFS='= ' read lhs rhs
+  do
+    if [[ ! $lhs =~ ^\ *# && -n $lhs ]]; then
+      rhs="${rhs%%\#*}"    # Del in line right comments
+      rhs="${rhs%%*( )}"   # Del trailing spaces
+      rhs="${rhs%\"*}"     # Del opening string quotes
+      rhs="${rhs#\"*}"     # Del closing string quotes
+      declare $lhs="$rhs"
+    fi
+  done < $config_file
+
+  if [ "$is_param" = 'initial' ] || [ "$is_param" = 'structure' ] || [ "$is_param" = 'model' ]; then
+    echo "execute the schema data structures & mandatory kernel data ..."
+    mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass mysql -e "drop database if exists $db_name"
+    mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass mysql -e "create database $db_name"
+    for sql_file in `ls ./0*.sql`; do echo "executing the $sql_file" && mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
+    echo "refill the stored routines ..."
+    for sql_file in `ls ./routines/0*.sql`; do echo "executing the $sql_file" && mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
+    echo ""
+    echo "all done. enjoy!"
+  elif [ "$is_param" = 'routine' ] || [ "$is_param" = 'code' ] || [ "$is_param" = 'sp' ] || [ "$is_param" = 'routines' ] || [ "$is_param" = 'logic' ]; then
+    echo "re-update the stored routines ..."
+    for sql_file in `ls ./routines/0*.sql`; do echo "executing the $sql_file" && mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
+    echo ""
+    echo "all done. enjoy!"
+    exit 0
+  else
+    echo "The query result of \"$is_param\" is:"
+    mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass --database=$db_name -e "set autocommit = 0; $is_param"
+  fi
+else
+  echo "Cannot find db.conf. You must execute the 'execute' command inside the queries folder that have the database configuration variables."
+  exit 0
+fi
