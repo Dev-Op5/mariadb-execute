@@ -22,6 +22,7 @@ The routines script must save in the SQL file prefixed with filename leading by 
   eg: `001-my_stored-proc.sql`
 
 
+
 This folder naming convention was ALREADY setup for the workspace extracted from Mokapedia's [git_project_template.tar.gz](http://src.mokapedia.net/git_project_template.tar.gz)
 
 
@@ -31,7 +32,7 @@ This folder naming convention was ALREADY setup for the workspace extracted from
 cd /path/to/your/queries/folder
 execute model                            # this will be drop/re-create your database and refill the schema + routines
 execute code                             # this will be re-create ONLY the files under the 'routines' folder
-execute "SELECT * FROM some_tables"      # this will be execute the specified queris and output the result to screen
+execute "SELECT * FROM some_tables"      # this will be execute the specified queries and output the result to screen
 execute help                             # display this inline help
 ```
 
