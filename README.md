@@ -1,5 +1,11 @@
 ## PRE-REQUISITES
 
+Required Package :
+
+```bash
+sudo apt-get install ed
+```
+
 You must code your data structures and initial data scripts in the SQL file with filename leading by 0 (zero)
 
   eg: `000-data-structure.sql`
