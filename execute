@@ -21,7 +21,7 @@ if [ "$is_param" = 'help' ]; then
   echo "  eg: 001-my_stored-proc.sql"
   echo ""
   echo "This folder naming convention was ALREADY setup for the workspace extracted from Mokapedia's git_project_template.tar.gz"
-  echo "Download here : http://src.mokapedia.net/git_project_template.tar.gz"
+  echo "Clone from here : http://code.mokapedia.net/angkringan/git-project-template"
   echo ""
   echo "[USAGE EXAMPLES]"
   echo ""
