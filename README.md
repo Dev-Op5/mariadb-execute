@@ -29,7 +29,7 @@ The routines script must save in the SQL file prefixed with filename leading by 
 
 
 
-This folder naming convention was ALREADY setup for the workspace extracted from Mokapedia's [git_project_template.tar.gz](http://src.mokapedia.net/git_project_template.tar.gz)
+This folder naming convention was ALREADY setup for the workspace extracted from Mokapedia's [Git Project Template](http://code.mokapedia.net/angkringan/git-project-template)
 
 
 ## USAGE EXAMPLES
