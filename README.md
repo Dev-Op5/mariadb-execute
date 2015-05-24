@@ -1,6 +1,6 @@
 # BASH SQL `execute`
 
-An impressive -black magic- management tools to easily maintain your SQL code.
+An impressive ~~black magic~~ management tools to easily maintain your SQL code.
 
 See changelog [here](#changelog)
 
