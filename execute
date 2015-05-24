@@ -1,6 +1,13 @@
 #!/bin/bash
 
-is_param=$1
+if [ -z "$1" ]; then
+  is_param=$1
+else
+  is_param='help'
+fi
+
+path_mysql=/usr/bin/mysql
+path_mysqldump=/usr/bin/mysqldump
 
 if [ "$is_param" = 'help' ]; then
   echo ""
@@ -26,9 +33,11 @@ if [ "$is_param" = 'help' ]; then
   echo "[USAGE EXAMPLES]"
   echo ""
   echo "cd /path/to/your/queries/folder"
-  echo "execute model                            # this will be drop/re-create your database and refill the schema + routines"
-  echo "execute code                             # this will be re-create ONLY the files under the 'routines' folder"
-  echo "execute \"SELECT * FROM some_tables\"      # this will be execute the specified queris and output the result to screen"
+  echo "execute model                            # this will drop/re-create your database and refill the schema + routines"
+  echo "execute code                             # this will re-create ONLY the files under the 'routines' folder"
+  echo "execute \"SELECT * FROM some_tables\"      # this will execute the specified queris and output the result to screen"
+  echo "execute backup                           # this will dump your database into *.sql that'll be generated on the timestamp-based-name subfolder"
+  echo "execute restore 2015-01-01               # this will restore the previously backup scripts on the given timestamp"
   echo "execute help                             # display this inline help"
   echo ""
   exit 0
@@ -53,24 +62,94 @@ if [ -f $config_file ]; then
 
   if [ "$is_param" = 'initial' ] || [ "$is_param" = 'structure' ] || [ "$is_param" = 'model' ]; then
     echo "execute the schema data structures & mandatory kernel data ..."
-    mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass mysql -e "drop database if exists $db_name"
-    mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass mysql -e "create database $db_name"
-    for sql_file in `ls ./0*.sql`; do echo "executing the $sql_file" && mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
+    $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass mysql -e "drop database if exists $db_name"
+    $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass mysql -e "create database $db_name"
+    for sql_file in `ls ./0*.sql`; do echo "executing the $sql_file" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
     echo "refill the stored routines ..."
-    for sql_file in `ls ./routines/0*.sql`; do echo "executing the $sql_file" && mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
+    directory_routines="$(pwd)/core-routines"
+    if [ -d $directory_routines ]; then
+      for sql_file in `ls ./core-routines/0*.sql`; do echo "executing the $sql_file" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
+    fi
+    directory_routines="$(pwd)/routines"
+    if [ -d $directory_routines ]; then
+      for sql_file in `ls ./routines/0*.sql`; do echo "executing the $sql_file" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
+    fi
     echo ""
     echo "all done. enjoy!"
   elif [ "$is_param" = 'routine' ] || [ "$is_param" = 'code' ] || [ "$is_param" = 'sp' ] || [ "$is_param" = 'routines' ] || [ "$is_param" = 'logic' ]; then
     echo "re-update the stored routines ..."
-    for sql_file in `ls ./routines/0*.sql`; do echo "executing the $sql_file" && mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
+    directory_routines="$(pwd)/routines"
+    if [ -d $directory_routines ]; then
+      for sql_file in `ls ./routines/0*.sql`; do echo "executing the $sql_file" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
+    fi
     echo ""
     echo "all done. enjoy!"
     exit 0
+  elif [ "$is_param" = 'dump' ] || [ "$is_param" = 'backup' ]; then
+
+    timestamp_flag=` date +%F`
+    backup_dir="$(pwd)/$timestamp_flag"
+
+    if [ -d $backup_dir ]; then
+      rm -R $backup_dir
+    fi
+
+    mkdir -p $backup_dir
+
+    echo "dump the structures (without trigger definition)..."
+    touch $backup_dir/1-$db_name-structure.sql
+    echo "drop database if exists $db_name;" > $backup_dir/1-$db_name-structure.sql
+    echo "create database $db_name;" >> $backup_dir/1-$db_name-structure.sql
+    echo "use $db_name;" >> $backup_dir/1-$db_name-structure.sql
+    echo "" >> $backup_dir/1-$db_name-structure.sql
+    $path_mysqldump -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB --add-drop-table --create-options --quote-names --no-data --skip-triggers --databases $db_name >> $backup_dir/1-$db_name-structure.sql
+
+    echo "dump the routines..."
+    touch $backup_dir/2-$db_name-routines.sql
+    echo "use $db_name;" > $backup_dir/2-$db_name-routines.sql
+    $path_mysqldump -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB --quote-names --no-create-db --no-create-info --no-data --routines --databases $db_name >> $backup_dir/2-$db_name-routines.sql
+
+    echo "dump the data..."
+    touch $backup_dir/3-$db_name-data.sql
+    echo "use $db_name;" > $backup_dir/3-$db_name-data.sql
+    echo "set unique_checks = 0;" >> $backup_dir/3-$db_name-data.sql
+    echo "set foreign_key_checks = 0;" >> $backup_dir/3-$db_name-data.sql
+    echo "set @disable_triggers = 1;" >> $backup_dir/3-$db_name-data.sql
+    $path_mysqldump -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB --hex-blob --lock-tables --no-create-db --no-create-info --skip-triggers --quote-names --dump-date --databases $db_name >> $backup_dir/3-$db_name-data.sql
+
+    echo "dump the triggers..."
+    echo "use $db_name;" > $backup_dir/4-$db_name-triggers.sql
+    $path_mysqldump -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB --quote-names --no-create-db --no-create-info --no-data --triggers --databases $db_name >> $backup_dir/4-$db_name-triggers.sql
+
+    echo "dump the event schedulers..."
+    echo "use $db_name;" > $backup_dir/5-$db_name-events.sql
+    $path_mysqldump -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB --quote-names --no-create-db --no-create-info --no-data --events --databases $db_name >> $backup_dir/5-$db_name-events.sql
+
+  elif [ "$is_param" = 'restore' ]; then
+    if [ -z "$2" ]; then
+      echo "you missed type the 2nd parameter. see HELP to gain more information."
+      exit
+    else
+      timestamp_flag=$2
+      backup_dir="$(pwd)/$timestamp_flag"
+      if [ -d $backup_dir ]; then
+        echo "trying to restore the backup scripts of database $db_name from $timestamp_flag's backup"
+        mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB mysql < $backup_dir/1-$db_name-structure.sql
+        mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/2-$db_name-routines.sql
+        mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/3-$db_name-data.sql
+        mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/4-$db_name-triggers.sql
+        mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/5-$db_name-events.sql
+      else
+        echo "cannot find the backup scripts from date $timestamp_flag (possibly you have type the wrong date as the 2nd command line parameter)"
+        exit 0
+      fi
+    fi
+
   else
     echo "The query result of \"$is_param\" is:"
-    mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass --database=$db_name -e "set autocommit = 0; $is_param"
+    $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass --database=$db_name -e "set autocommit = 0; $is_param"
   fi
 else
-  echo "Cannot find db.conf. You must execute the 'execute' command inside the queries folder that have the database configuration variables."
+  echo "Cannot find db.conf. You must execute the 'execute' command inside the 'queries' folder that have the database configuration variables."
   exit 0
 fi
