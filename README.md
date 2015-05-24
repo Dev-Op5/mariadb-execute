@@ -15,7 +15,10 @@ sudo apt-get install ed
 You have **no need** to `git clone` this repo to implement this on your Linux Box. Just [download from here](http://code.mokapedia.net/automagic/execute/raw/master/execute) and copy the `execute` file to folder `/usr/bin`. 
 
 ```bash
-sudo cp /path/to/your/execute /usr/bin
+cd /tmp
+wget http://code.mokapedia.net/automagic/execute/raw/master/execute
+chmod +x /tmp/execute
+sudo cp /tmp/execute /usr/bin
 ```
 
 Of course, there is no restriction if you wanna fork this repo and changes the code to suit your needs. I'll be happy if you add the functionality to this script to make this more powerful. Please don't hesitate to gimme pull requests.
