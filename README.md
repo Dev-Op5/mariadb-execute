@@ -12,6 +12,17 @@ Required Package :
 sudo apt-get install ed
 ```
 
+You have **no need** to `git clone` this repo to implement this on your Linux Box. Just [download from here](http://code.mokapedia.net/automagic/execute/raw/master/execute) and copy the `execute` file to folder `/usr/bin`. 
+
+```bash
+sudo cp /path/to/your/execute /usr/bin
+```
+
+Of course, there is no restriction if you wanna fork this repo and changes the code to suit your needs. I'll be happy if you add the functionality to this script to make this more powerful. Please don't hesitate to gimme pull requests.
+
+
+## GUIDES
+
 You must code your data structures and initial data scripts in the SQL file with filename leading by 0 (zero)
 
   eg: `000-data-structure.sql`
@@ -48,15 +59,6 @@ execute "SELECT * FROM some_tables"      # this will be execute the specified qu
 execute backup                           # this will dump your database into *.sql that'll be generated on the timestamp-based-name subfolder
 execute restore 2015-01-01               # this will restore the previously backup scripts on the given timestamp
 execute help                             # display this inline help
-```
-
-
-## TIPS
-
-For global usage, copy the `execute` file within `/usr/bin`
-
-```bash
-sudo cp /path/to/your/execute /usr/bin
 ```
 
 ## CHANGELOG
