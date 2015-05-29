@@ -63,7 +63,8 @@ if [ -f $config_file ]; then
 
   if [ "$is_param" = 'initial' ] || [ "$is_param" = 'structure' ] || [ "$is_param" = 'model' ]; then
     echo "trying to execute the schema data structures & mandatory kernel data ..."
-    if [ -f ./0*.sql ]; then
+    file_sql="$(pwd)/001-structures.sql"
+    if [ -f $file_sql ]; then
       $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass mysql -e "drop database if exists $db_name"
       $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass mysql -e "create database $db_name"
       for sql_file in `ls ./0*.sql`; do echo "executing the $sql_file" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
