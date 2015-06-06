@@ -141,7 +141,7 @@ if [ -f $config_file ]; then
       backup_dir="$(pwd)/$timestamp_flag"
       if [ -d $backup_dir ]; then
         echo "trying to restore the backup scripts of database $db_name from $timestamp_flag's backup"
-        mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB mysql < $backup_dir/1-$db_name-structure.sql
+        mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/1-$db_name-structure.sql
         mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/2-$db_name-routines.sql
         mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/3-$db_name-data.sql
         mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/4-$db_name-triggers.sql
