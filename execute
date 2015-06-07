@@ -59,9 +59,13 @@ fi
 if [ "$is_param" = 'self-update' ] || [ "$is_param" = '--update' ] || [ "$is_param" = '-u' ] || [ "$is_param" = '-U' ]  || [ "$is_param" = '--self-update' ]  || [ "$is_param" = '-self-update' ]; then
   current_directory=$pwd
   cd /tmp
+  if [ -f /tmp/execute ]; then
+    rm /tmp/execute
+  fi
   wget http://code.mokapedia.net/automagic/execute/raw/master/execute
   chmod +x /tmp/execute
   sudo cp /tmp/execute /usr/bin
+  echo "UPDATE SUCCESSFULLY!"
   cd $current_directory
   exit 0
 fi
