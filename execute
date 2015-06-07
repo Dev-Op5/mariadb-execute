@@ -193,11 +193,12 @@ if [ -f $config_file ]; then
   fi
 else
   if [ "$is_param" = 'generate-config' ]; then
-    cat "db_host = localhost" > $config_file
-    cat "db_port = 3306" >> $config_file
-    cat "db_user = root" >> $config_file
-    cat "db_pass = yourpassword" >> $config_file
-    cat "db_name = test" >> $config_file
+    config_file="$(pwd)/db.conf"
+    echo "db_host = localhost" > $config_file
+    echo "db_port = 3306" >> $config_file
+    echo "db_user = root" >> $config_file
+    echo "db_pass = yourpassword" >> $config_file
+    echo "db_name = test" >> $config_file
   else
     echo "Cannot find db.conf. "
     echo "You must execute the 'execute' command inside the 'queries' folder that have the database configuration variables."
