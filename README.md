@@ -62,6 +62,11 @@ execute "SELECT * FROM some_tables"      # this will be execute the specified qu
 execute backup                           # this will dump your database into *.sql that'll be generated on the timestamp-based-name subfolder
 execute restore 2015-01-01               # this will restore the previously backup scripts on the given timestamp
 execute help                             # display this inline help
+execute generate-config                  # this will generate the db.conf (if not exists)
+execute show-config                      # this will display the db.conf values
+execute help                             # display this inline help
+execute -v                               # display the program version
+execute self-update                      # update the program
 ```
 
 ## CHANGELOG
@@ -70,6 +75,7 @@ execute help                             # display this inline help
 2015-01-05 : initial version, 4 methods available : execute model, code, query, help
 2015-04-03 : update the README.md
 2015-05-25 : added new argument : backup and restore
+2015-06-08 : added 4 more argument : generate-config, show-config, --version, --self-update"
 ```
 
 # ENJOY!

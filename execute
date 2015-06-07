@@ -1,5 +1,7 @@
 #!/bin/bash
 
+PROGRAM_VERSION='1.0.4'
+
 if [ -z "$1" ]; then
   echo "no parameter given. please see the result of command: execute help"
   exit 0
@@ -7,10 +9,11 @@ else
   is_param=$1
 fi
 
+path_execute=$( readlink -f /usr/bin/execute )
 path_mysql=/usr/bin/mysql
 path_mysqldump=/usr/bin/mysqldump
 
-if [ "$is_param" = 'help' ]; then
+if [ "$is_param" = 'help' ] || [ "$is_param" = '--help' ] || [ "$is_param" = '-help' ] || [ "$is_param" = '?' ] || [ "$is_param" = '/?' ]; then
   echo ""
   echo "[PRE-REQUISITES]"
   echo ""
@@ -39,11 +42,29 @@ if [ "$is_param" = 'help' ]; then
   echo "execute \"SELECT * FROM some_tables\"      # this will execute the specified queris and output the result to screen"
   echo "execute backup                           # this will dump your database into *.sql that'll be generated on the timestamp-based-name subfolder"
   echo "execute restore 2015-01-01               # this will restore the previously backup scripts on the given timestamp"
+  echo "execute generate-config                  # this will generate the db.conf (if not exists)"
+  echo "execute show-config                      # this will display the db.conf values"
   echo "execute help                             # display this inline help"
+  echo "execute -v                               # display the program version"
+  echo "execute self-update                      # update the program"
   echo ""
   exit 0
 fi
 
+if [ "$is_param" = '-v' ] || [ "$is_param" = '-V' ] || [ "$is_param" = '--version' ]; then
+  echo "GNU Execute version $PROGRAM_VERSION -- build at $( date -r $path_execute )"
+  exit 0
+fi
+
+if [ "$is_param" = 'self-update' ] || [ "$is_param" = '--update' ] || [ "$is_param" = '-u' ] || [ "$is_param" = '-U' ]  || [ "$is_param" = '--self-update' ]  || [ "$is_param" = '-self-update' ]; then
+  current_directory=$pwd
+  cd /tmp
+  wget http://code.mokapedia.net/automagic/execute/raw/master/execute
+  chmod +x /tmp/execute
+  sudo cp /tmp/execute /usr/bin
+  cd $current_directory
+  exit 0
+fi
 
 config_file="$(pwd)/db.conf"
 
@@ -151,12 +172,34 @@ if [ -f $config_file ]; then
         exit 0
       fi
     fi
+  elif [ "$is_param" = 'show-config' ]; then
+    cat $config_file
 
+  elif [ "$is_param" = 'generate-config' ]; then
+    read -p "You already have the db.conf file. Do you want to update the configuration? (Y/N) : " db_conf_reconfigure
+    if [ "$db_conf_reconfigure" = 'Y' ] || [ "$db_conf_reconfigure" = 'y' ]; then
+      nano $config_file
+    else
+      echo ""
+      exit 0
+    fi
   else
     echo "The query result of \"$is_param\" is:"
     $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass --database=$db_name -e "set autocommit = 0; $is_param"
   fi
 else
-  echo "Cannot find db.conf. You must execute the 'execute' command inside the 'queries' folder that have the database configuration variables."
-  exit 0
+  if [ "$is_param" = 'generate-config' ]; then
+    cat "db_host = localhost" > $config_file
+    cat "db_port = 3306" >> $config_file
+    cat "db_user = root" >> $config_file
+    cat "db_pass = yourpassword" >> $config_file
+    cat "db_name = test" >> $config_file
+  else
+    echo "Cannot find db.conf. "
+    echo "You must execute the 'execute' command inside the 'queries' folder that have the database configuration variables."
+    echo "If you have NOT any db.conf, generate it with the command 'execute generate-config' in the queries folder."
+    exit 0
+  fi
 fi
+
+exit 0
