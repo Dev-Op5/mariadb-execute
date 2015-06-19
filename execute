@@ -32,7 +32,7 @@ if [ "$is_param" = 'help' ] || [ "$is_param" = '--help' ] || [ "$is_param" = '-h
   echo "  eg: 001-my_stored-proc.sql"
   echo ""
   echo "This folder naming convention was ALREADY setup for the workspace extracted from Mokapedia's git_project_template.tar.gz"
-  echo "Clone from here : http://code.mokapedia.net/angkringan/git-project-template"
+  echo "Clone from here : http://code.mokapedia.net/project-template/git-project-template"
   echo ""
   echo "[USAGE EXAMPLES]"
   echo ""
@@ -101,10 +101,16 @@ if [ -f $config_file ]; then
     directory_routines="$(pwd)/core-routines"
     if [ -d $directory_routines ]; then
       for sql_file in `ls ./core-routines/0*.sql`; do echo "executing the $sql_file" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
+    else
+      mkdir -p $directory_routines
+      touch $directory_routines/.gitkeep
     fi
     directory_routines="$(pwd)/routines"
     if [ -d $directory_routines ]; then
       for sql_file in `ls ./routines/0*.sql`; do echo "executing the $sql_file" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
+    else
+      mkdir -p $directory_routines
+      touch $directory_routines/.gitkeep
     fi
     echo ""
     echo "all done. enjoy!"
@@ -201,8 +207,8 @@ else
     echo "db_name = test" >> $config_file
   else
     echo "Cannot find db.conf. "
-    echo "You must execute the 'execute' command inside the 'queries' folder that have the database configuration variables."
-    echo "If you have NOT any db.conf, generate it with the command 'execute generate-config' in the queries folder."
+    echo "You must execute the 'execute' command inside the folder that have the database configuration variables."
+    echo "If you have NOT any db.conf, generate it with the command 'execute generate-config' in the folder."
     exit 0
   fi
 fi
