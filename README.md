@@ -12,11 +12,11 @@ Required Package :
 sudo apt-get install ed
 ```
 
-You have **no need** to `git clone` this repo to implement this on your Linux Box. Just [download from here](http://code.mokapedia.net/automagic/execute/raw/master/execute) and copy the `execute` file to folder `/usr/bin`. 
+You have **no need** to `git clone` this repo to implement this on your Linux Box. Just [download from here](http://code.mokapedia.net/server/execute/raw/master/execute) and copy the `execute` file to folder `/usr/bin`. 
 
 ```bash
 cd /tmp
-wget http://code.mokapedia.net/automagic/execute/raw/master/execute
+wget http://code.mokapedia.net/server/execute/raw/master/execute
 chmod +x /tmp/execute
 sudo cp /tmp/execute /usr/bin
 ```
