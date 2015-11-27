@@ -37,6 +37,7 @@ if [ "$is_param" = 'help' ] || [ "$is_param" = '--help' ] || [ "$is_param" = '-h
   echo "[USAGE EXAMPLES]"
   echo ""
   echo "cd /path/to/your/queries/folder"
+  echo "execute init                             # this will create database, user & grant privileges automatically (this will drop everything!)"
   echo "execute model                            # this will drop/re-create your database and refill the schema + routines"
   echo "execute code                             # this will re-create ONLY the files under the 'routines' folder"
   echo "execute \"SELECT * FROM some_tables\"      # this will execute the specified queris and output the result to screen"
@@ -44,6 +45,7 @@ if [ "$is_param" = 'help' ] || [ "$is_param" = '--help' ] || [ "$is_param" = '-h
   echo "execute restore 2015-01-01               # this will restore the previously backup scripts on the given timestamp"
   echo "execute generate-config                  # this will generate the db.conf (if not exists)"
   echo "execute show-config                      # this will display the db.conf values"
+  echo "execute login                            # this will login into CLI Mode of MySQL/MariaDB database console"
   echo "execute help                             # display this inline help"
   echo "execute -v                               # display the program version"
   echo "execute self-update                      # update the program"
@@ -86,6 +88,8 @@ if [ -f $config_file ]; then
     fi
   done < $config_file
 
+
+
   if [ "$is_param" = 'initial' ] || [ "$is_param" = 'structure' ] || [ "$is_param" = 'model' ]; then
     echo "trying to execute the schema data structures & mandatory kernel data ..."
     file_sql="$(pwd)/001-structures.sql"
@@ -114,6 +118,17 @@ if [ -f $config_file ]; then
     fi
     echo ""
     echo "all done. enjoy!"
+  elif [ "$is_param" = 'init' ] || [ "$is_param" = '-i' ] || [ "$is_param" = '--init' ]; then
+    read -p "Prompt for database ROOT password : " root_password
+    $path_mysql --host=$db_host --port=$db_port --user=root --password=$root_password -e "drop database if exists $db_name; create database $db_name;"
+    $path_mysql --host=$db_host --port=$db_port --user=root --password=$root_password -e "grant all privileges on $db_name.* to '$db_user'@'localhost' identified by '$db_pass' with grant option; flush privileges;"
+    echo ""
+    echo "Successfully init the database/user/password based on db.conf configuration values."
+    echo "Please try to login to your database with that credentials OR re-execute the execute command with options --login"
+    exit 0
+  elif [ "$is_param" = 'login' ] || [ "$is_param" = '-l' ] || [ "$is_param" = '--login' ]; then
+    $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name
+    exit 0
   elif [ "$is_param" = 'routine' ] || [ "$is_param" = 'code' ] || [ "$is_param" = 'sp' ] || [ "$is_param" = 'routines' ] || [ "$is_param" = 'logic' ]; then
     echo "trying to re-update the stored routines ..."
     directory_routines="$(pwd)/routines"
