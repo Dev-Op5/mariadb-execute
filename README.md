@@ -56,6 +56,7 @@ This folder naming convention was ALREADY setup for the workspace extracted from
 
 ```bash
 cd /path/to/your/queries/folder
+execute init                             # this will create database, user & grant privileges automatically (this will drop everything!)
 execute model                            # this will be drop/re-create your database and refill the schema + routines
 execute code                             # this will be re-create ONLY the files under the 'routines' folder
 execute "SELECT * FROM some_tables"      # this will be execute the specified queries and output the result to screen
@@ -64,6 +65,7 @@ execute restore 2015-01-01               # this will restore the previously back
 execute help                             # display this inline help
 execute generate-config                  # this will generate the db.conf (if not exists)
 execute show-config                      # this will display the db.conf values
+execute login                            # this will login into CLI Mode of MySQL/MariaDB database console
 execute help                             # display this inline help
 execute -v                               # display the program version
 execute self-update                      # update the program
@@ -75,7 +77,8 @@ execute self-update                      # update the program
 2015-01-05 : initial version, 4 methods available : execute model, code, query, help
 2015-04-03 : update the README.md
 2015-05-25 : added new argument : backup and restore
-2015-06-08 : added 4 more argument : generate-config, show-config, --version, --self-update"
+2015-06-08 : added 4 more argument : generate-config, show-config, --version, --self-update
+2015-11-27 : added 2 new argument : --init and --login
 ```
 
 # ENJOY!
