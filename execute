@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROGRAM_VERSION='1.0.6'
+PROGRAM_VERSION='1.0.7'
 
 if [ -z "$1" ]; then
   echo "no parameter given. please see the result of command: execute help"
@@ -87,8 +87,6 @@ if [ -f $config_file ]; then
       declare $lhs="$rhs"
     fi
   done < $config_file
-
-
 
   if [ "$is_param" = 'structure' ] || [ "$is_param" = 'model' ]; then
     echo "trying to execute the schema data structures & mandatory kernel data ..."
@@ -178,7 +176,7 @@ if [ -f $config_file ]; then
 
     echo "dump the event schedulers..."
     echo "use $db_name;" > $backup_dir/5-$db_name-events.sql
-    $path_mysqldump -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB --quote-names --no-create-db --no-create-info --no-data --events --databases $db_name >> $backup_dir/5-$db_name-events.sql
+    $path_mysqldump -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB --quote-names --no-create-db --no-create-info --no-data --skip-triggers --events --databases $db_name >> $backup_dir/5-$db_name-events.sql
 
   elif [ "$is_param" = 'restore' ]; then
     if [ -z "$2" ]; then
@@ -217,11 +215,11 @@ if [ -f $config_file ]; then
 else
   if [ "$is_param" = 'generate-config' ]; then
     config_file="$(pwd)/db.conf"
-    echo "db_host = localhost" > $config_file
-    echo "db_port = 3306" >> $config_file
-    echo "db_user = root" >> $config_file
-    echo "db_pass = yourpassword" >> $config_file
-    echo "db_name = test" >> $config_file
+    echo "db_host=localhost" > $config_file
+    echo "db_port=3306" >> $config_file
+    echo "db_user=root" >> $config_file
+    echo "db_pass=yourpassword" >> $config_file
+    echo "db_name=test" >> $config_file
   else
     echo "Cannot find db.conf. "
     echo "You must execute the 'execute' command inside the folder that have the database configuration variables."

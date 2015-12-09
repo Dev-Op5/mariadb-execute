@@ -79,6 +79,7 @@ execute self-update                      # update the program
 2015-05-25 : added new argument : backup and restore
 2015-06-08 : added 4 more argument : generate-config, show-config, --version, --self-update
 2015-11-27 : added 2 new argument : --init and --login
+2015-12-09 : [bug-fixed] command utk backup event scheduler ternyata juga mengikutkan membackup trigger secara implisit.
 ```
 
 # ENJOY!
