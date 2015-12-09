@@ -160,7 +160,7 @@ if [ -f $config_file ]; then
     echo "dump the routines..."
     touch $backup_dir/2-$db_name-routines.sql
     echo "use $db_name;" > $backup_dir/2-$db_name-routines.sql
-    $path_mysqldump -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB --quote-names --no-create-db --no-create-info --no-data --routines --databases $db_name >> $backup_dir/2-$db_name-routines.sql
+    $path_mysqldump -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB --quote-names --no-create-db --no-create-info --no-data --skip-triggers --routines --databases $db_name >> $backup_dir/2-$db_name-routines.sql
 
     echo "dump the data..."
     touch $backup_dir/3-$db_name-data.sql
