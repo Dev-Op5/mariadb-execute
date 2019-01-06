@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROGRAM_VERSION='1.0.7'
+PROGRAM_VERSION='1.0.8'
 
 if [ -z "$1" ]; then
   echo "no parameter given. please see the result of command: execute help"
@@ -94,7 +94,7 @@ if [ -f $config_file ]; then
     if [ -f $file_sql ]; then
       if [ "$db_user" = 'root' ]; then
         $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass mysql -e "drop database if exists $db_name"
-        $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass mysql -e "create database $db_name"
+        $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass mysql -e "create database $db_name default character set utf8mb4 collate utf8mb4_unicode_ci"
       fi
       for sql_file in `ls ./0*.sql`; do echo "executing the $sql_file" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
     else
@@ -120,7 +120,7 @@ if [ -f $config_file ]; then
     echo "all done. enjoy!"
   elif [ "$is_param" = 'init' ] || [ "$is_param" = '-i' ] || [ "$is_param" = '--init' ]; then
     read -p "Prompt for database ROOT password : " root_password
-    $path_mysql --host=$db_host --port=$db_port --user=root --password=$root_password -e "drop database if exists $db_name; create database $db_name;"
+    $path_mysql --host=$db_host --port=$db_port --user=root --password=$root_password -e "drop database if exists $db_name; create database $db_name default character set utf8mb4 collate utf8mb4_unicode_ci;"
     $path_mysql --host=$db_host --port=$db_port --user=root --password=$root_password -e "grant all privileges on $db_name.* to '$db_user'@'localhost' identified by '$db_pass' with grant option; flush privileges;"
     echo ""
     echo "Successfully init the database/user/password based on db.conf configuration values."
@@ -159,7 +159,7 @@ if [ -f $config_file ]; then
     echo "dump the structures (without trigger definition)..."
     touch $backup_dir/1-$db_name-structure.sql
     echo "drop database if exists $db_name;" > $backup_dir/1-$db_name-structure.sql
-    echo "create database $db_name;" >> $backup_dir/1-$db_name-structure.sql
+    echo "create database $db_name default character set utf8mb4 collate utf8mb4_unicode_ci;" >> $backup_dir/1-$db_name-structure.sql
     echo "use $db_name;" >> $backup_dir/1-$db_name-structure.sql
     echo "" >> $backup_dir/1-$db_name-structure.sql
     $path_mysqldump -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB --add-drop-table --create-options --quote-names --no-data --skip-triggers --databases $db_name >> $backup_dir/1-$db_name-structure.sql
