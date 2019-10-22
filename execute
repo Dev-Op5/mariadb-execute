@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROGRAM_VERSION='1.0.8'
+PROGRAM_VERSION='1.0.9'
 
 if [ -z "$1" ]; then
   echo "no parameter given. please see the result of command: execute help"
@@ -9,7 +9,7 @@ else
   is_param=$1
 fi
 
-path_execute=$( readlink -f /usr/bin/execute )
+path_execute=$( readlink -f /usr/local/bin/execute )
 path_mysql=/usr/bin/mysql
 path_mysqldump=/usr/bin/mysqldump
 
