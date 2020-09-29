@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROGRAM_VERSION='1.0.9'
+PROGRAM_VERSION='1.1.0'
 
 if [ -z "$1" ]; then
   echo "no parameter given. please see the result of command: execute help"
@@ -64,7 +64,7 @@ if [ "$is_param" = 'self-update' ] || [ "$is_param" = '--update' ] || [ "$is_par
   if [ -f /tmp/execute ]; then
     rm /tmp/execute
   fi
-  wget http://code.mokapedia.net/server/execute/raw/master/execute
+  wget http://code.serverq.org/infrastructure/database/execute/raw/master/execute
   chmod +x /tmp/execute
   sudo cp /tmp/execute /usr/bin
   echo "UPDATE SUCCESSFULLY!"
