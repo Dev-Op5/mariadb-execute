@@ -3,3 +3,5 @@ db_port = 3306
 db_user = root
 db_pass = yourpassword
 db_name = test
+db_charset = utf8mb4
+db_collation = utf8mb4_unicode_ci
