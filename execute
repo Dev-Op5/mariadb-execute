@@ -15,28 +15,9 @@ path_mysqldump=/usr/bin/mysqldump
 
 if [ "$is_param" = 'help' ] || [ "$is_param" = '--help' ] || [ "$is_param" = '-help' ] || [ "$is_param" = '?' ] || [ "$is_param" = '/?' ]; then
   echo ""
-  echo "[PRE-REQUISITES]"
-  echo ""
-  echo "You must code your data structures and initial data scripts in the SQL file with filename leading by 0 (zero)"
-  echo "  eg: 000-data-structure.sql"
-  echo ""
-  echo "The folder that contains your script must have a file named db.conf that contains config as below:"
-  echo "  db_host = your_database_hostname"
-  echo "  db_port = your_database_port"
-  echo "  db_user = your_username"
-  echo "  db_pass = your_password"
-  echo "  db_name = your_database_name"
-  echo ""
-  echo "You must code the Stored Routines inside the SUB-FOLDER named 'routines' (without any quotes)"
-  echo "The routines script must save in the SQL file prefixed with filename leading by 0 (zero)"
-  echo "  eg: 001-my_stored-proc.sql"
-  echo ""
-  echo "This folder naming convention was ALREADY setup for the workspace extracted from Mokapedia's git_project_template.tar.gz"
-  echo "Clone from here : http://code.mokapedia.net/project-template/git-project-template"
-  echo ""
   echo "[USAGE EXAMPLES]"
   echo ""
-  echo "cd /path/to/your/queries/folder"
+  echo "cd /path/to/your/folder"
   echo "execute init                             # this will create database, user & grant privileges automatically (this will drop everything!)"
   echo "execute model                            # this will drop/re-create your database and refill the schema + routines"
   echo "execute code                             # this will re-create ONLY the files under the 'routines' folder"
@@ -54,7 +35,7 @@ if [ "$is_param" = 'help' ] || [ "$is_param" = '--help' ] || [ "$is_param" = '-h
 fi
 
 if [ "$is_param" = '-v' ] || [ "$is_param" = '-V' ] || [ "$is_param" = '--version' ]; then
-  echo "GNU Execute version $PROGRAM_VERSION -- build at $( date -r $path_execute )"
+  echo "MariaDB-Execute version $PROGRAM_VERSION -- build at $( date -r $path_execute )"
   exit 0
 fi
 
@@ -64,9 +45,9 @@ if [ "$is_param" = 'self-update' ] || [ "$is_param" = '--update' ] || [ "$is_par
   if [ -f /tmp/execute ]; then
     rm /tmp/execute
   fi
-  wget http://code.serverq.org/infrastructure/database/execute/raw/master/execute
+  wget https://github.com/C0mmitBot/mariadb-execute/raw/master/execute
   chmod +x /tmp/execute
-  sudo cp /tmp/execute /usr/bin
+  sudo cp /tmp/execute /usr/local/bin
   echo "UPDATE SUCCESSFULLY!"
   cd $current_directory
   exit 0
@@ -88,13 +69,22 @@ if [ -f $config_file ]; then
     fi
   done < $config_file
 
+  if [ "$db_host" = 'localhost' ]; then
+    db_host=127.0.0.1
+  fi
+
+  if [[ ! -e "$db_charset" && ! -e "$db_collation" ]];then
+    charset=utf8mb4
+    collation=utf8mb4_unicode_ci
+  fi 
+
   if [ "$is_param" = 'structure' ] || [ "$is_param" = 'model' ]; then
     echo "trying to execute the schema data structures & mandatory kernel data ..."
     file_sql="$(pwd)/001-structures.sql"
     if [ -f $file_sql ]; then
       if [ "$db_user" = 'root' ]; then
         $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass mysql -e "drop database if exists $db_name"
-        $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass mysql -e "create database $db_name default character set utf8mb4 collate utf8mb4_unicode_ci"
+        $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass mysql -e "create database $db_name default character set $db_charset collate $db_collation"
       fi
       for sql_file in `ls ./0*.sql`; do echo "executing the $sql_file" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
     else
@@ -120,8 +110,8 @@ if [ -f $config_file ]; then
     echo "all done. enjoy!"
   elif [ "$is_param" = 'init' ] || [ "$is_param" = '-i' ] || [ "$is_param" = '--init' ]; then
     read -p "Prompt for database ROOT password : " root_password
-    $path_mysql --host=$db_host --port=$db_port --user=root --password=$root_password -e "drop database if exists $db_name; create database $db_name default character set utf8mb4 collate utf8mb4_unicode_ci;"
-    $path_mysql --host=$db_host --port=$db_port --user=root --password=$root_password -e "grant all privileges on $db_name.* to '$db_user'@'localhost' identified by '$db_pass' with grant option; flush privileges;"
+    $path_mysql --host=$db_host --port=$db_port --user=root --password=$root_password -e "drop database if exists $db_name; create database $db_name default character set $db_charset collate $db_collation;"
+    $path_mysql --host=$db_host --port=$db_port --user=root --password=$root_password -e "grant all privileges on $db_name.* to '$db_user'@'localhost' identified via mysql_native_password using password('$db_pass') with grant option; flush privileges;"
     echo ""
     echo "Successfully init the database/user/password based on db.conf configuration values."
     echo "Please try to login to your database with that credentials OR re-execute the execute command with options --login"
@@ -227,6 +217,8 @@ else
     echo "db_user=root" >> $config_file
     echo "db_pass=yourpassword" >> $config_file
     echo "db_name=test" >> $config_file
+    echo "db_charset=utf8mb4" >> $config_file
+    echo "db_collation=utf8mb4_unicode_ci" >> $config_file
   else
     echo "Cannot find db.conf. "
     echo "You must execute the 'execute' command inside the folder that have the database configuration variables."

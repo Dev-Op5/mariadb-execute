@@ -1,10 +1,8 @@
-# BASH SQL `execute`
+# BASH MySQL/MariaDB `execute`
 
 An impressive ~~black magic~~ management tools to easily maintain your SQL code.
 
-See changelog [here](#changelog)
-
-## PRE-REQUISITES
+## 1. PRE-REQUISITES
 
 Required Package :
 
@@ -12,19 +10,35 @@ Required Package :
 sudo apt-get install ed
 ```
 
-You have **no need** to `git clone` this repo to implement this on your Linux Box. Just [download from here](http://code.mokapedia.net/server/execute/raw/master/execute) and copy the `execute` file to folder `/usr/bin`. 
+## 2. INSTALLATION
+
+You have **no need** to `git clone` this repo to implement this on your Linux Box. Just [download from here](https://github.com/C0mmitBot/mariadb-execute/raw/master/execute) and copy the `execute` file to folder `/usr/local/bin`. 
 
 ```bash
 cd /tmp
-wget http://code.mokapedia.net/server/execute/raw/master/execute
+wget https://github.com/C0mmitBot/mariadb-execute/raw/master/execute
 chmod +x /tmp/execute
-sudo cp /tmp/execute /usr/bin
+sudo cp /tmp/execute /usr/local/bin
 ```
 
 Of course, there is no restriction if you wanna fork this repo and changes the code to suit your needs. I'll be happy if you add the functionality to this script to make this more powerful. Please don't hesitate to gimme pull requests.
 
+Example :
 
-## GUIDES
+```bash
+mkdir -p ~/Scripts
+cd ~/Scripts/
+git clone https://github.com/C0mmitBot/mariadb-execute.git mariadb-execute 
+chmod +x execute
+sudo ln -s ~/Scripts/mariadb-execute/execute /usr/local/bin 
+```
+
+## 3. COMMON USAGE: backup & restore
+
+
+
+
+## 4. ADVANCE USAGE: SQL Routines Development
 
 You must code your data structures and initial data scripts in the SQL file with filename leading by 0 (zero)
 
@@ -55,7 +69,7 @@ This folder naming convention was ALREADY setup for the workspace extracted from
 ## USAGE EXAMPLES
 
 ```bash
-cd /path/to/your/queries/folder
+cd /path/to/your/folder
 execute init                             # this will create database, user & grant privileges automatically (this will drop everything!)
 execute model                            # this will be drop/re-create your database and refill the schema + routines
 execute code                             # this will be re-create ONLY the files under the 'routines' folder
@@ -71,15 +85,5 @@ execute -v                               # display the program version
 execute self-update                      # update the program
 ```
 
-## CHANGELOG
-
-```text
-2015-01-05 : initial version, 4 methods available : execute model, code, query, help
-2015-04-03 : update the README.md
-2015-05-25 : added new argument : backup and restore
-2015-06-08 : added 4 more argument : generate-config, show-config, --version, --self-update
-2015-11-27 : added 2 new argument : --init and --login
-2015-12-09 : [bug-fixed] command utk backup event scheduler ternyata juga mengikutkan membackup trigger secara implisit.
-```
 
 # ENJOY!
