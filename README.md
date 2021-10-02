@@ -35,10 +35,23 @@ sudo ln -s ~/Scripts/mariadb-execute/execute /usr/local/bin
 
 ## 3. COMMON USAGE: backup & restore
 
+To perform backup just type in the directory that **already have** the `db.conf` file:
 
+```bash
+execute backup
+```
 
+This command will generate sub-folder with the name based on the date when you perform backup (format: `YYYY-MM-DD`), e.g. `2021-10-02`
 
-## 4. ADVANCE USAGE: SQL Routines Development
+To perform restore, just type the `execute restore` and add extra-parameter with the name of the folder that you've previously backup.
+
+```bash
+execute restore 2021-10-02
+```
+
+As simple as that.
+
+## 4. ADVANCE USAGE: Code Development (SQL Routines)
 
 You must code your data structures and initial data scripts in the SQL file with filename leading by 0 (zero)
 
@@ -53,6 +66,8 @@ The folder that contains your script must have a file named `db.conf` that conta
   db_user = your_username
   db_pass = your_password
   db_name = your_database_name
+  db_charset = utf8mb4
+  db_collation = utf8mb4_unicode_ci
 ```
 
 You must code the Stored Routines inside the SUB-FOLDER named `routines` (without any quotes)
@@ -61,9 +76,7 @@ The routines script must save in the SQL file prefixed with filename leading by 
 
   eg: `001-my_stored-proc.sql`
 
-
-
-This folder naming convention was ALREADY setup for the workspace extracted from Mokapedia's [Git Project Template](http://code.mokapedia.net/angkringan/git-project-template)
+I will expand (or rewrite) the documentation about how to use the `execute` to maintain the SQL Code Development soon.
 
 
 ## USAGE EXAMPLES
