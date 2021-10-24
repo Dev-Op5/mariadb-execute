@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROGRAM_VERSION='1.1.0'
+PROGRAM_VERSION='1.1.1'
 
 if [ -z "$1" ]; then
   echo "no parameter given. please see the result of command: execute help"
@@ -14,19 +14,28 @@ path_mysql=/usr/bin/mysql
 path_mysqldump=/usr/bin/mysqldump
 
 if [ "$is_param" = 'help' ] || [ "$is_param" = '--help' ] || [ "$is_param" = '-help' ] || [ "$is_param" = '?' ] || [ "$is_param" = '/?' ]; then
+  echo "--------------"
+  echo "USAGE EXAMPLES"
+  echo "--------------"
   echo ""
-  echo "[USAGE EXAMPLES]"
+  echo "[BACKUP & RESTORE]"
+  echo "execute backup                           # this will dump your database into *.sql that'll be generated on the timestamp-based-name subfolder"
+  echo "execute backup 7z                        # same as above, but with extra archive it to 7z file (highest compression)"
+  echo "execute restore 2015-01-01               # this will restore the previously backup scripts on the given timestamp"
+  echo "execute restore 2015-01-01.7z            # variant of restore procedure from 7z archive file"
   echo ""
-  echo "cd /path/to/your/folder"
+  echo "[SQL DEVELOPMENT]"
   echo "execute init                             # this will create database, user & grant privileges automatically (this will drop everything!)"
   echo "execute model                            # this will drop/re-create your database and refill the schema + routines"
   echo "execute code                             # this will re-create ONLY the files under the 'routines' folder"
+  echo ""
+  echo "[CONSOLE COMMAND]"
+  echo "execute login                            # this will login into CLI Mode of MySQL/MariaDB database console"
   echo "execute \"SELECT * FROM some_tables\"      # this will execute the specified queris and output the result to screen"
-  echo "execute backup                           # this will dump your database into *.sql that'll be generated on the timestamp-based-name subfolder"
-  echo "execute restore 2015-01-01               # this will restore the previously backup scripts on the given timestamp"
+  echo ""
+  echo "[MISC]"
   echo "execute generate-config                  # this will generate the db.conf (if not exists)"
   echo "execute show-config                      # this will display the db.conf values"
-  echo "execute login                            # this will login into CLI Mode of MySQL/MariaDB database console"
   echo "execute help                             # display this inline help"
   echo "execute -v                               # display the program version"
   echo "execute self-update                      # update the program"
