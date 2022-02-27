@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROGRAM_VERSION='1.1.0'
+PROGRAM_VERSION='1.1.1'
 
 if [ -z "$1" ]; then
   echo "no parameter given. please see the result of command: execute help"
@@ -14,19 +14,28 @@ path_mysql=/usr/bin/mysql
 path_mysqldump=/usr/bin/mysqldump
 
 if [ "$is_param" = 'help' ] || [ "$is_param" = '--help' ] || [ "$is_param" = '-help' ] || [ "$is_param" = '?' ] || [ "$is_param" = '/?' ]; then
+  echo "--------------"
+  echo "USAGE EXAMPLES"
+  echo "--------------"
   echo ""
-  echo "[USAGE EXAMPLES]"
+  echo "[BACKUP & RESTORE]"
+  echo "execute backup                           # this will dump your database into *.sql that'll be generated on the timestamp-based-name subfolder"
+  echo "execute backup 7z                        # same as above, but with extra archive it to 7z file (highest compression)"
+  echo "execute restore 2015-01-01               # this will restore the previously backup scripts on the given timestamp"
+  echo "execute restore 2015-01-01.7z            # variant of restore procedure from 7z archive file"
   echo ""
-  echo "cd /path/to/your/folder"
+  echo "[SQL DEVELOPMENT]"
   echo "execute init                             # this will create database, user & grant privileges automatically (this will drop everything!)"
   echo "execute model                            # this will drop/re-create your database and refill the schema + routines"
-  echo "execute code                             # this will re-create ONLY the files under the 'routines' folder"
+  echo "execute routines                         # this will re-create ONLY the files under the 'routines' folder"
+  echo ""
+  echo "[CONSOLE COMMAND]"
+  echo "execute login                            # this will login into CLI Mode of MySQL/MariaDB database console"
   echo "execute \"SELECT * FROM some_tables\"      # this will execute the specified queris and output the result to screen"
-  echo "execute backup                           # this will dump your database into *.sql that'll be generated on the timestamp-based-name subfolder"
-  echo "execute restore 2015-01-01               # this will restore the previously backup scripts on the given timestamp"
+  echo ""
+  echo "[MISC]"
   echo "execute generate-config                  # this will generate the db.conf (if not exists)"
   echo "execute show-config                      # this will display the db.conf values"
-  echo "execute login                            # this will login into CLI Mode of MySQL/MariaDB database console"
   echo "execute help                             # display this inline help"
   echo "execute -v                               # display the program version"
   echo "execute self-update                      # update the program"
@@ -74,24 +83,47 @@ if [ -f $config_file ]; then
   fi
 
   if [[ ! -e "$db_charset" && ! -e "$db_collation" ]];then
-    charset=utf8mb4
-    collation=utf8mb4_unicode_ci
+    db_charset=utf8mb4
+    db_collation=utf8mb4_unicode_ci
   fi 
 
-  if [ "$is_param" = 'structure' ] || [ "$is_param" = 'model' ]; then
-    echo "trying to execute the schema data structures & mandatory kernel data ..."
-    file_sql="$(pwd)/001-structures.sql"
-    if [ -f $file_sql ]; then
-      if [ "$db_user" = 'root' ]; then
-        $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass mysql -e "drop database if exists $db_name"
-        $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass mysql -e "create database $db_name default character set $db_charset collate $db_collation"
+  if [ "$is_param" = 'structure' ] || [ "$is_param" = 'model' ] || [ "$is_param" = '--model' ]; then
+    echo "Trying to execute the schema data structures & mandatory kernel data ... - ALL EXISTING DATA WILL BE ERASED!"
+    read -p "Continue (Y/N) : " is_continued
+    if [ $is_continue = 'Y' ] || [ $is_continue = 'y' ]; then
+      file_sql="$(pwd)/001-structures.sql"
+      if [ -f $file_sql ]; then
+        if [ "$db_user" = 'root' ]; then
+          $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass mysql -e "drop database if exists $db_name"
+          $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass mysql -e "create database $db_name default character set $db_charset collate $db_collation"
+        fi
+        for sql_file in `ls ./0*.sql`; do echo "executing the $sql_file" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
+      else
+        echo "The model (Data Structures) cannot be identified and recreated. No file named 001-structures.sql found."
       fi
-      for sql_file in `ls ./0*.sql`; do echo "executing the $sql_file" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
-    else
-      echo "no 0*.sql file found."
+      echo ""
+      echo "Trying to refill the stored routines ..."
+      directory_routines="$(pwd)/core-routines"
+      if [ -d $directory_routines ]; then
+        for sql_file in `ls ./core-routines/0*.sql`; do echo "executing the $sql_file" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
+      else
+        mkdir -p $directory_routines
+        touch $directory_routines/.gitkeep
+      fi
+      directory_routines="$(pwd)/routines"
+      if [ -d $directory_routines ]; then
+        for sql_file in `ls ./routines/0*.sql`; do echo "executing the $sql_file" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
+      else
+        mkdir -p $directory_routines
+        touch $directory_routines/.gitkeep
+      fi
+      echo ""
+      echo "All done. Enjoy!"
+    else 
+      exit 0
     fi
-    echo ""
-    echo "trying to refill the stored routines ..."
+  elif [ "$is_param" = 'routines' ] || [ "$is_param" = 'code' ] || [ "$is_param" = 'sp' ] || [ "$is_param" = 'routine' ] || [ "$is_param" = 'logic' ] || [ "$is_param" = '--routine' ]; then
+    echo "Trying to recreate the stored routines only ..."
     directory_routines="$(pwd)/core-routines"
     if [ -d $directory_routines ]; then
       for sql_file in `ls ./core-routines/0*.sql`; do echo "executing the $sql_file" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
@@ -102,44 +134,31 @@ if [ -f $config_file ]; then
     directory_routines="$(pwd)/routines"
     if [ -d $directory_routines ]; then
       for sql_file in `ls ./routines/0*.sql`; do echo "executing the $sql_file" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
-    else
-      mkdir -p $directory_routines
-      touch $directory_routines/.gitkeep
     fi
     echo ""
-    echo "all done. enjoy!"
+    echo "All done. enjoy!"
+    exit 0  
   elif [ "$is_param" = 'init' ] || [ "$is_param" = '-i' ] || [ "$is_param" = '--init' ]; then
     read -p "Prompt for database ROOT password : " root_password
-    $path_mysql --host=$db_host --port=$db_port --user=root --password=$root_password -e "drop database if exists $db_name; create database $db_name default character set $db_charset collate $db_collation;"
-    $path_mysql --host=$db_host --port=$db_port --user=root --password=$root_password -e "grant all privileges on $db_name.* to '$db_user'@'localhost' identified via mysql_native_password using password('$db_pass') with grant option; flush privileges;"
+    $path_mysql --host=$db_host --port=$db_port --user=root --password=$root_password -e "create database if not exists $db_name default character set $db_charset collate $db_collation;"
+    $path_mysql --host=$db_host --port=$db_port --user=root --password=$root_password -e "grant all privileges on $db_name.* to '$db_user'@'%' identified via mysql_native_password using password('$db_pass') with grant option; flush privileges;"
+    directory_routines="$(pwd)/core-routines"
+    mkdir -p $directory_routines
+    touch $directory_routines/.gitkeep
+    directory_routines="$(pwd)/routines"
+    mkdir -p $directory_routines
+    touch $directory_routines/.gitkeep
     echo ""
     echo "Successfully init the database/user/password based on db.conf configuration values."
-    echo "Please try to login to your database with that credentials OR re-execute the execute command with options --login"
+    echo "Please try to login to your database with that credentials OR re-execute the 'execute login' command."
     exit 0
   elif [ "$is_param" = 'login' ] || [ "$is_param" = '-l' ] || [ "$is_param" = '--login' ]; then
     $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name
     exit 0
-  elif [ "$is_param" = 'routine' ] || [ "$is_param" = 'code' ] || [ "$is_param" = 'sp' ] || [ "$is_param" = 'routines' ] || [ "$is_param" = 'logic' ]; then
-    echo "trying to re-update the stored routines ..."
-    directory_routines="$(pwd)/core-routines"
-    if [ -d $directory_routines ]; then
-      for sql_file in `ls ./core-routines/0*.sql`; do echo "executing the $sql_file" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
-    else
-      mkdir -p $directory_routines
-      touch $directory_routines/.gitkeep
-    fi
-    directory_routines="$(pwd)/routines"
-    if [ -d $directory_routines ]; then
-      for sql_file in `ls ./routines/0*.sql`; do echo "executing the $sql_file" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $sql_file ; done
-    fi
-    echo ""
-    echo "all done. enjoy!"
-    exit 0
   elif [ "$is_param" = 'dump' ] || [ "$is_param" = 'backup' ]; then
-
-    timestamp_flag=` date +%F`
-    backup_dir="$(pwd)/$timestamp_flag"
-
+    timestamp_flag=` date +%Y%m%d.%H%M%S `
+    backup_dir="$(pwd)/backup-$timestamp_flag"
+    backup_file="$(pwd)/backup-$timestamp_flag.7z"
     if [ -d $backup_dir ]; then
       rm -R $backup_dir
     fi
@@ -149,8 +168,6 @@ if [ -f $config_file ]; then
     echo "dump the structures (without trigger definition)..."
     touch $backup_dir/1-$db_name-structure.sql
     echo "drop database if exists $db_name;" > $backup_dir/1-$db_name-structure.sql
-    echo "create database $db_name default character set utf8mb4 collate utf8mb4_unicode_ci;" >> $backup_dir/1-$db_name-structure.sql
-    echo "use $db_name;" >> $backup_dir/1-$db_name-structure.sql
     echo "" >> $backup_dir/1-$db_name-structure.sql
     $path_mysqldump -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB --add-drop-table --create-options --quote-names --no-data --skip-triggers --databases $db_name >> $backup_dir/1-$db_name-structure.sql
 
@@ -175,42 +192,81 @@ if [ -f $config_file ]; then
     echo "use $db_name;" > $backup_dir/5-$db_name-events.sql
     $path_mysqldump -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB --quote-names --no-create-db --no-create-info --no-data --skip-triggers --events --databases $db_name >> $backup_dir/5-$db_name-events.sql
 
+    if [ -z "$2" ]; then
+      echo ""
+      echo "BACKUP SUCCESSFULLY! - Target Directory: $backup_dir"
+      exit 0
+    else
+      second_param=$2
+      if [ "$second_param" = '7z' ] || [ "$second_param" = 'a' ]; then
+        7z a -mx=9 $backup_file $backup_dir
+        echo ""
+        echo "BACKUP SUCCESSFULLY! - Target File: $backup_file"
+        rm -R $backup_dir
+        exit 0
+      fi
+      exit 0
+    fi
+
   elif [ "$is_param" = 'restore' ]; then
     if [ -z "$2" ]; then
       echo "you missed type the 2nd parameter. see HELP to gain more information."
-      exit
+      exit 0
     else
-      timestamp_flag=$2
-      backup_dir="$(pwd)/$timestamp_flag"
+      is_file=false
+      file_folder=$2
+      if [ -f $file_folder ]; then
+        7z x $file_folder
+        file_folder=${file_folder%.*}
+        is_file=true
+        sleep 1
+      fi 
+      backup_dir="$(pwd)/$file_folder"
+
       if [ -d $backup_dir ]; then
-        echo "trying to restore the backup scripts of database $db_name from $timestamp_flag's backup"
+        echo "trying to restore database $db_name -- source: $backup_dir"
         mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/1-$db_name-structure.sql
         mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/2-$db_name-routines.sql
         mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/3-$db_name-data.sql
         mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/4-$db_name-triggers.sql
         mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/5-$db_name-events.sql
+        
+        echo ""
+        echo "RESTORE SUCCESSFULLY!"
+        if [ $is_file = 'false' ]; then
+          exit 0  
+        else 
+          rm -R $backup_dir
+          exit 0
+        fi 
       else
         echo "cannot find the backup scripts from date $timestamp_flag (possibly you have type the wrong date as the 2nd command line parameter)"
         exit 0
       fi
     fi
-  elif [ "$is_param" = 'show-config' ]; then
+  elif [ "$is_param" = 'show-config' ] || [ "$is_param" = '--show-config' ]; then
     cat $config_file
 
-  elif [ "$is_param" = 'generate-config' ]; then
+  elif [ "$is_param" = 'generate-config' ] || [ "$is_param" = '--generate-config' ]; then
     read -p "You already have the db.conf file. Do you want to update the configuration? (Y/N) : " db_conf_reconfigure
     if [ "$db_conf_reconfigure" = 'Y' ] || [ "$db_conf_reconfigure" = 'y' ]; then
       nano $config_file
+      exit 0
     else
       echo ""
       exit 0
     fi
   else
-    echo "The query result of \"$is_param\" is:"
-    $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass --database=$db_name -e "set autocommit = 0; $is_param"
+    if [ -f $1 ]; then
+      mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $1
+    else
+      echo "The query result of \"$is_param\" is:"
+      $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass --database=$db_name -e "set autocommit = 0; $is_param"
+      exit 0
+    fi
   fi
 else
-  if [ "$is_param" = 'generate-config' ]; then
+  if [ "$is_param" = 'generate-config' ] || [ "$is_param" = '--generate-config' ]; then
     config_file="$(pwd)/db.conf"
     echo "db_host=localhost" > $config_file
     echo "db_port=3306" >> $config_file
@@ -219,6 +275,7 @@ else
     echo "db_name=test" >> $config_file
     echo "db_charset=utf8mb4" >> $config_file
     echo "db_collation=utf8mb4_unicode_ci" >> $config_file
+    exit 0
   else
     echo "Cannot find db.conf. "
     echo "You must execute the 'execute' command inside the folder that have the database configuration variables."
