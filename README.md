@@ -12,11 +12,11 @@ sudo apt-get install ed
 
 ## 2. INSTALLATION
 
-You have **no need** to `git clone` this repo to implement this on your Linux Box. Just [download from here](https://github.com/C0mmitBot/mariadb-execute/raw/master/execute) and copy the `execute` file to folder `/usr/local/bin`. 
+You have **no need** to `git clone` this repo to implement this on your Linux Box. Just [download from here](https://raw.githubusercontent.com/Dev-Op5/mariadb-execute/master/execute) and copy the `execute` file to folder `/usr/local/bin`. 
 
 ```bash
 cd /tmp
-wget https://github.com/C0mmitBot/mariadb-execute/raw/master/execute
+wget https://github.com/Dev-Op5/mariadb-execute.git
 chmod +x /tmp/execute
 sudo cp /tmp/execute /usr/local/bin
 ```
@@ -26,11 +26,11 @@ Of course, there is no restriction if you wanna fork this repo and changes the c
 Example :
 
 ```bash
-mkdir -p ~/Scripts
-cd ~/Scripts/
-git clone https://github.com/C0mmitBot/mariadb-execute.git mariadb-execute 
-chmod +x execute
-sudo ln -s ~/Scripts/mariadb-execute/execute /usr/local/bin 
+mkdir -p ~/MyScripts
+cd ~/MyScripts/
+git clone https://github.com/Dev-Op5/mariadb-execute.git mariadb-execute 
+chmod +x mariadb-execute/execute
+sudo ln -s ~/MyScripts/mariadb-execute/execute /usr/local/bin 
 ```
 
 ## 3. COMMON USAGE: backup & restore

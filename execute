@@ -54,7 +54,7 @@ if [ "$is_param" = 'self-update' ] || [ "$is_param" = '--update' ] || [ "$is_par
   if [ -f /tmp/execute ]; then
     rm /tmp/execute
   fi
-  wget https://github.com/C0mmitBot/mariadb-execute/raw/master/execute
+  wget https://raw.githubusercontent.com/Dev-Op5/mariadb-execute/master/execute
   chmod +x /tmp/execute
   sudo cp /tmp/execute /usr/local/bin
   echo "UPDATE SUCCESSFULLY!"
