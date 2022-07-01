@@ -28,6 +28,7 @@ if [ "$is_param" = 'help' ] || [ "$is_param" = '--help' ] || [ "$is_param" = '-h
   echo "execute init                             # this will create database, user & grant privileges automatically (this will drop everything!)"
   echo "execute model                            # this will drop/re-create your database and refill the schema + routines"
   echo "execute routines                         # this will re-create ONLY the files under the 'routines' folder"
+  echo "execute file                             # this will execute SQL from the specified file"
   echo ""
   echo "[CONSOLE COMMAND]"
   echo "execute login                            # this will login into CLI Mode of MySQL/MariaDB database console"
@@ -256,6 +257,9 @@ if [ -f $config_file ]; then
       echo ""
       exit 0
     fi
+  elif [ "$is_param" = 'file' ]; then
+    echo "executing the $2" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $2
+
   else
     if [ -f $1 ]; then
       mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $1
