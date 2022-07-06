@@ -10,7 +10,7 @@ else
 fi
 
 path_execute=$( readlink -f /usr/local/bin/execute )
-path_mysql=/usr/bin/mysql
+path_mysql=/usr/bin/mariadb
 path_mysqldump=/usr/bin/mysqldump
 
 if [ "$is_param" = 'help' ] || [ "$is_param" = '--help' ] || [ "$is_param" = '-help' ] || [ "$is_param" = '?' ] || [ "$is_param" = '/?' ]; then
@@ -258,11 +258,11 @@ if [ -f $config_file ]; then
       exit 0
     fi
   elif [ "$is_param" = 'file' ]; then
-    echo "executing the $2" && $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name < $2
+    $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass --protocol=tcp --table --column-names --verbose --show-warnings -e "source $2"
 
   else
     if [ -f $1 ]; then
-      mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $1
+      mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB --protocol=tcp --table --column-names --verbose --show-warnings --database=$db_name -e "source $1"
     else
       echo "The query result of \"$is_param\" is:"
       $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass --database=$db_name -e "set autocommit = 0; $is_param"
