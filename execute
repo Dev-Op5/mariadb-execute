@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROGRAM_VERSION='1.1.1'
+PROGRAM_VERSION='1.1.2'
 
 if [ -z "$1" ]; then
   echo "no parameter given. please see the result of command: execute help"
@@ -159,7 +159,7 @@ if [ -f $config_file ]; then
   elif [ "$is_param" = 'dump' ] || [ "$is_param" = 'backup' ]; then
     timestamp_flag=` date +%Y%m%d.%H%M%S `
     backup_dir="$(pwd)/backup-$timestamp_flag"
-    backup_file="$(pwd)/backup-$timestamp_flag.7z"
+    backup_file="$(pwd)/backup-$timestamp_flag.zip"
     if [ -d $backup_dir ]; then
       rm -R $backup_dir
     fi
@@ -199,8 +199,8 @@ if [ -f $config_file ]; then
       exit 0
     else
       second_param=$2
-      if [ "$second_param" = '7z' ] || [ "$second_param" = 'a' ]; then
-        7z a -mx=9 $backup_file $backup_dir
+      if [ "$second_param" = '7z' ] || [ "$second_param" = 'zip' ] || [ "$second_param" = 'a' ]; then
+        7z a -tzip -mx=9 $backup_file $backup_dir
         echo ""
         echo "BACKUP SUCCESSFULLY! - Target File: $backup_file"
         rm -R $backup_dir
