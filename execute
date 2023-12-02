@@ -1,19 +1,13 @@
 #!/bin/bash
-
-PROGRAM_VERSION='1.1.2'
-
-if [ -z "$1" ]; then
-  echo "no parameter given. please see the result of command: execute help"
-  exit 0
-else
-  is_param=$1
-fi
+PROGRAM_VERSION='1.1.3'
 
 path_execute=$( readlink -f /usr/local/bin/execute )
 path_mysql=/usr/bin/mariadb
-path_mysqldump=/usr/bin/mysqldump
+path_mysqldump=/usr/bin/mariadbdump
 
-if [ "$is_param" = 'help' ] || [ "$is_param" = '--help' ] || [ "$is_param" = '-help' ] || [ "$is_param" = '?' ] || [ "$is_param" = '/?' ]; then
+is_param=$1
+
+if [ -z "$1" ] || [ "$is_param" = 'help' ] || [ "$is_param" = '--help' ] || [ "$is_param" = '-help' ] || [ "$is_param" = '?' ] || [ "$is_param" = '/?' ]; then
   echo "--------------"
   echo "USAGE EXAMPLES"
   echo "--------------"
@@ -21,6 +15,7 @@ if [ "$is_param" = 'help' ] || [ "$is_param" = '--help' ] || [ "$is_param" = '-h
   echo "[BACKUP & RESTORE]"
   echo "execute backup                           # this will dump your database into *.sql that'll be generated on the timestamp-based-name subfolder"
   echo "execute backup 7z                        # same as above, but with extra archive it to 7z file (highest compression)"
+  echo "execute backup zip                        # same as above, but with extra archive it to zip file (highest compression)"
   echo "execute restore 2015-01-01               # this will restore the previously backup scripts on the given timestamp"
   echo "execute restore 2015-01-01.7z            # variant of restore procedure from 7z archive file"
   echo ""
@@ -140,26 +135,48 @@ if [ -f $config_file ]; then
     echo "All done. enjoy!"
     exit 0  
   elif [ "$is_param" = 'init' ] || [ "$is_param" = '-i' ] || [ "$is_param" = '--init' ]; then
-    read -p "Prompt for database ROOT password : " root_password
-    $path_mysql --host=$db_host --port=$db_port --user=root --password=$root_password -e "create database if not exists $db_name default character set $db_charset collate $db_collation;"
-    $path_mysql --host=$db_host --port=$db_port --user=root --password=$root_password -e "grant all privileges on $db_name.* to '$db_user'@'%' identified via mysql_native_password using password('$db_pass') with grant option; flush privileges;"
-    directory_routines="$(pwd)/core-routines"
-    mkdir -p $directory_routines
-    touch $directory_routines/.gitkeep
-    directory_routines="$(pwd)/routines"
-    mkdir -p $directory_routines
-    touch $directory_routines/.gitkeep
+    echo "Recent MariaDB 10.+, with the new rule of unix_socket authentication, permit an OS-level account (root) to login without password."
+    echo "The limitation of this \"execute init\" parameters just can be used with root-level database user that HAVE SET with classic password-based authentication."
+    echo "If you don't have any, you can create the root-level username via command: \"execute init another-root\" (but only applicable the database host is LOCALHOST)"
     echo ""
-    echo "Successfully init the database/user/password based on db.conf configuration values."
-    echo "Please try to login to your database with that credentials OR re-execute the 'execute login' command."
-    exit 0
+    second_param=$2
+    if [ "$second_param" = 'another-root' ]; then
+      read -p "Enter the new root username : " newroot_user
+      read -p "Enter the new root password : " newroot_pass
+      $path_mysql -e "grant all privileges on *.* to '$newroot_user'@'%' identified via mysql_native_password using password('$newroot_pass') with grant option; flush privileges;"
+      echo ""
+      echo "Congratulations. New root account successfully created!"
+      echo "Now you can use the \"execute init\" command to create/recreate the new database according your db.conf value."
+      exit 0
+    fi
+    if [ -z "$1" ]; then 
+      read -p "Enter the root-level database user : " root_username
+      read -p "Password : " root_password
+      $path_mysql --host=$db_host --port=$db_port --user=$root_username --password=$root_password -e "create database if not exists $db_name default character set $db_charset collate $db_collation;"
+      $path_mysql --host=$db_host --port=$db_port --user=$root_username --password=$root_password -e "grant all privileges on $db_name.* to '$db_user'@'%' identified via mysql_native_password using password('$db_pass') with grant option; flush privileges;"
+      directory_routines="$(pwd)/core-routines"
+      mkdir -p $directory_routines
+      touch $directory_routines/.gitkeep
+      directory_routines="$(pwd)/routines"
+      mkdir -p $directory_routines
+      touch $directory_routines/.gitkeep
+      echo ""
+      echo "Successfully init the database/user/password based on db.conf configuration values."
+      echo "Please try to login to your database with that credentials OR re-execute the 'execute login' command."
+      exit 0
+    fi
   elif [ "$is_param" = 'login' ] || [ "$is_param" = '-l' ] || [ "$is_param" = '--login' ]; then
     $path_mysql --host=$db_host --port=$db_port --user=$db_user --password=$db_pass $db_name
     exit 0
   elif [ "$is_param" = 'dump' ] || [ "$is_param" = 'backup' ]; then
     timestamp_flag=` date +%Y%m%d.%H%M%S `
     backup_dir="$(pwd)/backup-$timestamp_flag"
+    second_param=$2
     backup_file="$(pwd)/backup-$timestamp_flag.zip"
+    if [ "$second_param" = '7z' ]; then
+      backup_file="$(pwd)/backup-$timestamp_flag.7z"
+    end if;
+        
     if [ -d $backup_dir ]; then
       rm -R $backup_dir
     fi
