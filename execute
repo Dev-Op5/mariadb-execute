@@ -1,5 +1,5 @@
 #!/bin/bash
-PROGRAM_VERSION='1.1.3'
+PROGRAM_VERSION='1.1.4'
 
 path_execute=$( readlink -f /usr/local/bin/execute )
 path_mysql=/usr/bin/mariadb
