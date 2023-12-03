@@ -1,5 +1,5 @@
 #!/bin/bash
-PROGRAM_VERSION='1.1.4'
+PROGRAM_VERSION='1.1.5'
 
 path_execute=$( readlink -f /usr/local/bin/execute )
 path_mysql=/usr/bin/mariadb
@@ -175,7 +175,7 @@ if [ -f $config_file ]; then
     backup_file="$(pwd)/backup-$timestamp_flag.zip"
     if [ "$second_param" = '7z' ]; then
       backup_file="$(pwd)/backup-$timestamp_flag.7z"
-    end if;
+    fi
         
     if [ -d $backup_dir ]; then
       rm -R $backup_dir
