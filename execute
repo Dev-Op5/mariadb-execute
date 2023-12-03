@@ -1,5 +1,5 @@
 #!/bin/bash
-PROGRAM_VERSION='1.1.6'
+PROGRAM_VERSION='1.1.7'
 
 path_execute=$( readlink -f /usr/local/bin/execute )
 path_mysql=/usr/bin/mariadb
@@ -243,11 +243,11 @@ if [ -f $config_file ]; then
 
       if [ -d $backup_dir ]; then
         echo "trying to restore database $db_name -- source: $backup_dir"
-        mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/1-$db_name-structure.sql
-        mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/2-$db_name-routines.sql
-        mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/3-$db_name-data.sql
-        mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/4-$db_name-triggers.sql
-        mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/5-$db_name-events.sql
+        $path_mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/1-$db_name-structure.sql
+        $path_mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/2-$db_name-routines.sql
+        $path_mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/3-$db_name-data.sql
+        $path_mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/4-$db_name-triggers.sql
+        $path_mysql -u$db_user -p$db_pass --host=$db_host --port=$db_port --max_allowed_packet=2GB $db_name < $backup_dir/5-$db_name-events.sql
         
         echo ""
         echo "RESTORE SUCCESSFULLY!"
